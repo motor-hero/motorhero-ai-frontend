@@ -48,12 +48,13 @@ const AddJob = ({ isOpen, onClose }: AddJobProps) => {
         handleSubmit,
         reset,
         formState: { errors, isSubmitting },
-    } = useForm<{ file: FileList | null; serviceType: string }>({
+    } = useForm<{ file: FileList | null; serviceType: string; name: string }>({
         mode: "onBlur",
         criteriaMode: "all",
         defaultValues: {
             file: null,
             serviceType: "",
+            name: "",
         },
     });
 
@@ -78,8 +79,9 @@ const AddJob = ({ isOpen, onClose }: AddJobProps) => {
         mutationFn: (data: FormData) => {
             const queryParams = new URLSearchParams({
                 scraper_type: data.get("scraper_type") as string,
+                name: data.get("name") as string,
             });
-            return JobsService.createJob(data, queryParams);
+            return JobsService.createScrapingJob(data, queryParams);
         },
         onSuccess: (job) => {
             const estimatedTimeHours = Math.ceil(job.estimated_time / 3600);
@@ -104,6 +106,7 @@ const AddJob = ({ isOpen, onClose }: AddJobProps) => {
         setIsLoading(true);
         const formData = new FormData();
         formData.append("file", data.file[0]);
+        formData.append("name", data.name);
         formData.append("scraper_type", selectedServiceType);
 
         createJobMutation.mutate(formData);
@@ -117,6 +120,21 @@ const AddJob = ({ isOpen, onClose }: AddJobProps) => {
                     <ModalHeader>Adicionar Trabalho</ModalHeader>
                     {!isLoading && <ModalCloseButton />}
                     <ModalBody pb={6}>
+
+                        <FormControl isRequired isInvalid={!!errors.name}>
+                            <FormLabel htmlFor="name">Nome do Trabalho</FormLabel> {/* Add this block */}
+                            <Input
+                                id="name"
+                                placeholder="Digite o nome do trabalho"
+                                {...register("name", {
+                                    required: "O nome é obrigatório.",
+                                })}
+                            />
+                            {errors.name && (
+                                <FormErrorMessage>{errors.name.message}</FormErrorMessage>
+                            )}
+                        </FormControl>
+
                         <FormControl isRequired isInvalid={!!errors.file}>
                             <FormLabel htmlFor="file">Enviar Arquivo</FormLabel>
                             <Box display="flex" alignItems="center">

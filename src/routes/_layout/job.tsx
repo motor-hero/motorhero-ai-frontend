@@ -105,8 +105,7 @@ function JobsTable() {
                     <Thead>
                         <Tr>
                             <Th>ID</Th>
-                            <Th>Tipo de Trabalho</Th>
-                            <Th>Tipo de Serviço</Th>
+                            <Th>Etapa</Th>
                             <Th>Status</Th>
                             <Th>Progresso</Th>
                             <Th>Criado em</Th>
@@ -128,11 +127,7 @@ function JobsTable() {
                             {jobs?.map((job) => (
                                 <Tr key={job.id} opacity={isPlaceholderData ? 0.5 : 1}>
                                     <Td>{job.id}</Td>
-                                    <Td>{job.type}</Td>
-                                    <Td>
-                                        {serviceTypes[job.type]?.[job.service_type] ||
-                                            job.service_type}
-                                    </Td>
+                                    <Td>{job.step === "scraping" ? "Scraping" : "Enriquecimento"}</Td>
                                     <Td>{statusMapping[job.status]}</Td>
                                     <Td>
                                         <Box display="flex" alignItems="center" gap={2}>

@@ -109,6 +109,7 @@ export type JobCreate = {
     part_ids: string[];
     service_type: string;
     requested_by_id: string;
+    name: string | null;
     file?: File | null;
 };
 
@@ -124,6 +125,8 @@ export type JobPublic = {
     updated_at: string;
     requested_by_id: string;
     part_ids: string[];
+    parent_id?: string | null;
+    name: string;
 };
 
 export type JobsPublic = {

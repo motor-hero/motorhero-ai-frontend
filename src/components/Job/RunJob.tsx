@@ -11,10 +11,10 @@ import {
     Text,
     Spinner,
 } from "@chakra-ui/react";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {JobsService} from "../../client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { JobsService } from "../../client";
 import useCustomToast from "../../hooks/useCustomToast";
-import {ApiError} from "../../client";
+import { ApiError } from "../../client";
 
 interface RunJobModalProps {
     isOpen: boolean;
@@ -22,19 +22,23 @@ interface RunJobModalProps {
     job: any;
 }
 
-const RunJobModal = ({isOpen, onClose, job}: RunJobModalProps) => {
+const RunJobModal = ({ isOpen, onClose, job }: RunJobModalProps) => {
     const queryClient = useQueryClient();
     const showToast = useCustomToast();
 
     const runJobMutation = useMutation({
-        mutationFn: () => JobsService.runScrapingJob(job.id),
+        mutationFn: () => {
+            return job.type === "scraping"
+                ? JobsService.runScrapingJob(job.id)
+                : JobsService.runEnrichmentJob(job.id);
+        },
         onSuccess: () => {
             showToast("Success!", "Job has started running.", "success");
-            queryClient.invalidateQueries(["jobs"]); // Refresh jobs list
+            queryClient.invalidateQueries(["jobs"]);
             onClose();
         },
         onError: (err: ApiError) => {
-            showToast("Error", "Trabalho já executado", "error");
+            showToast("Error", "Failed to start the job.", "error");
         },
     });
 
@@ -44,29 +48,23 @@ const RunJobModal = ({isOpen, onClose, job}: RunJobModalProps) => {
 
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
-            <ModalOverlay/>
-            <ModalContent style={{
-                width: "400px",
-                padding: "20px",
-                borderRadius: "10px",
-                overflow: "hidden",
-                boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
-                alignItems: "center",
-                justifyContent: "center",
-                display: "flex",
-                flexDirection: "column",
-                margin: "auto",
-                alignContent: "center"
-            }}>
+            <ModalOverlay />
+            <ModalContent>
                 <ModalHeader>Confirmação de Execução</ModalHeader>
-                <ModalCloseButton/>
+                <ModalCloseButton />
                 <ModalBody>
                     <Text>
                         Você tem certeza que deseja executar o Trabalho ID: "{job.id}"?
                     </Text>
+                    {job.type === "enrichment" && (
+                        <Text mt={4}>
+                            Custo estimado: ${job.estimated_cost.toFixed(2)}
+                        </Text>
+                    )}
                     <Text mt={4}>
-                        Tempo estimado de execução :{" "}
-                        {Math.ceil(job.estimated_time / 3600)} {Math.ceil(job.estimated_time / 3600) > 1 ? "hours" : "minutes"}
+                        Tempo estimado de execução:{" "}
+                        {Math.ceil(job.estimated_time / 3600)}{" "}
+                        {Math.ceil(job.estimated_time / 3600) > 1 ? "horas" : "minutos"}
                     </Text>
                 </ModalBody>
 
@@ -76,7 +74,7 @@ const RunJobModal = ({isOpen, onClose, job}: RunJobModalProps) => {
                         mr={3}
                         onClick={handleConfirm}
                         isLoading={runJobMutation.isLoading}
-                        spinner={<Spinner size="sm"/>}
+                        spinner={<Spinner size="sm" />}
                     >
                         Confirmar
                     </Button>
