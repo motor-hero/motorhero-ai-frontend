@@ -58,7 +58,7 @@ const RunJobModal = ({ isOpen, onClose, job }: RunJobModalProps) => {
                     </Text>
                     {job.type === "enrichment" && (
                         <Text mt={4}>
-                            Custo estimado: ${job.estimated_cost.toFixed(2)}
+                            Custo estimado: ${job.estimated_cost.toFixed(3)}
                         </Text>
                     )}
                     <Text mt={4}>

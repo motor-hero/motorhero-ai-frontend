@@ -20,10 +20,16 @@ const ActionsMenuJob = ({ type, value, disabled }: ActionsMenuProps) => {
     const [isDetailModalOpen, setDetailModalOpen] = useState(false);
 
     const enrichmentJob = value.parent_job;
+    const scrapingJob = value;
 
     const handleViewDetails = () => {
         setDetailModalOpen(true);
     };
+
+    const canExecuteScraping = scrapingJob.status === 'pending';
+    const canCreateEnrichment = scrapingJob.status === 'completed' && !enrichmentJob;
+    const canExecuteEnrichment = enrichmentJob && enrichmentJob.status === 'pending';
+    const canViewDetails = scrapingJob.status === 'completed';
 
     return (
         <>
@@ -35,38 +41,49 @@ const ActionsMenuJob = ({ type, value, disabled }: ActionsMenuProps) => {
                     variant="unstyled"
                 />
                 <MenuList>
-                    {value.status === 'pending' && value.type === 'scraping' && (
+                    {canExecuteScraping && (
                         <MenuItem onClick={runJobModal.onOpen} icon={<FiPlay fontSize="16px" />}>
-                            Executar {type}
+                            Executar Scraping
                         </MenuItem>
                     )}
-                    {!enrichmentJob && (
+                    {canCreateEnrichment && (
                         <MenuItem onClick={enrichJobModal.onOpen} icon={<FiPlusCircle fontSize="16px" />}>
-                            Criar Enriquecimento {type}
+                            Criar Enriquecimento
                         </MenuItem>
                     )}
-                    <MenuItem onClick={handleViewDetails} icon={<FiEye fontSize="16px" />}>
-                        Ver Detalhes
-                    </MenuItem>
+                    {canExecuteEnrichment && (
+                        <MenuItem onClick={runJobModal.onOpen} icon={<FiPlay fontSize="16px" />}>
+                            Executar Enriquecimento
+                        </MenuItem>
+                    )}
+                    {canViewDetails && (
+                        <MenuItem onClick={handleViewDetails} icon={<FiEye fontSize="16px" />}>
+                            Ver Detalhes
+                        </MenuItem>
+                    )}
                     <MenuItem onClick={deleteModal.onOpen} icon={<FiTrash fontSize="16px" />} color="ui.danger">
                         Deletar {type}
                     </MenuItem>
                 </MenuList>
             </Menu>
 
-            <RunJobModal job={enrichmentJob || value} isOpen={runJobModal.isOpen} onClose={runJobModal.onClose} />
+            <RunJobModal
+                job={canExecuteEnrichment ? enrichmentJob : scrapingJob}
+                isOpen={runJobModal.isOpen}
+                onClose={runJobModal.onClose}
+            />
 
-            {value && value.id && (
-                <EnrichJobModal job={value} isOpen={enrichJobModal.isOpen} onClose={enrichJobModal.onClose} />
+            {canCreateEnrichment && (
+                <EnrichJobModal job={scrapingJob} isOpen={enrichJobModal.isOpen} onClose={enrichJobModal.onClose} />
             )}
 
-            <Delete type={type} id={value.id} isOpen={deleteModal.isOpen} onClose={deleteModal.onClose} />
+            <Delete type={type} id={scrapingJob.id} isOpen={deleteModal.isOpen} onClose={deleteModal.onClose} />
 
-            {value && (
+            {canViewDetails && (
                 <JobDetailModal
                     isOpen={isDetailModalOpen}
                     onClose={() => setDetailModalOpen(false)}
-                    jobId={value.id}
+                    jobId={scrapingJob.id}
                 />
             )}
         </>

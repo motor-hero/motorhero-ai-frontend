@@ -681,10 +681,48 @@ export class JobsService {
         });
     }
 
-    public static getJobParts(jobId: string): CancelablePromise<any> {
+    public static downloadEnrichedParts(jobId: string): CancelablePromise<Response> {
         return __request(OpenAPI, {
             method: "GET",
-            url: `/api/v1/jobs/${jobId}/parts`,
+            url: `/api/v1/jobs/${jobId}/download-enriched`,
+            responseType: "blob",
+        }).then(response => {
+            return new Response(response, {
+                headers: {
+                    'Content-Type': 'application/octet-stream'
+                }
+            });
         });
     }
+
+    public static downloadScrapedParts(jobId: string): CancelablePromise<Response> {
+        return __request(OpenAPI, {
+            method: "GET",
+            url: `/api/v1/jobs/${jobId}/download-scraped`,
+            responseType: "blob",
+        }).then(response => {
+            return new Response(response, {
+                headers: {
+                    'Content-Type': 'application/octet-stream'
+                }
+            });
+        });
+    }
+
+    public static verifyPart(partId: string, data: { is_verified: boolean, enriched_data: any | null }): CancelablePromise<any> {
+        const body: any = {
+            is_verified: data.is_verified
+        };
+
+        if (data.enriched_data !== null) {
+            body.enriched_corrected_data = JSON.stringify(data.enriched_data);
+        }
+
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: `/api/v1/parts/${partId}/verify`,
+            body: body,
+        });
+    }
+
 }
