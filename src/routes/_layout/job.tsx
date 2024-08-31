@@ -128,7 +128,7 @@ function JobsTable() {
                                 <Tr key={job.id} opacity={isPlaceholderData ? 0.5 : 1}>
                                     <Td>{job.id}</Td>
                                     <Td>{job.step === "scraping" ? "Scraping" : "Enriquecimento"}</Td>
-                                    <Td>{statusMapping[job.status]}</Td>
+                                    <Td>{job.parent_job ? statusMapping[job.parent_job.status] : statusMapping[job.status]}</Td>
                                     <Td>
                                         <Box display="flex" alignItems="center" gap={2}>
                                             <Progress

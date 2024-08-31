@@ -709,6 +709,12 @@ export class JobsService {
         });
     }
 
+    public static downloadImages(jobId: string): Promise<Response> {
+        return fetch(`${OpenAPI.BASE}/api/v1/jobs/${jobId}/download-images`, {
+            method: "GET",
+        });
+    }
+
     public static verifyPart(partId: string, data: { is_verified: boolean, enriched_data: any | null }): CancelablePromise<any> {
         const body: any = {
             is_verified: data.is_verified
@@ -722,6 +728,58 @@ export class JobsService {
             method: 'POST',
             url: `/api/v1/parts/${partId}/verify`,
             body: body,
+        });
+    }
+
+    public static getDashboardData(params: {
+        job_type?: string;
+        status?: string;
+        date_from?: string;
+        date_to?: string;
+        page?: number;
+        page_size?: number;
+    }): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/dashboard',
+            query: params,
+        });
+    }
+
+    public static async addPartImage(
+        partId: string,
+        formData: FormData
+    ): Promise<any> {
+        console.log(`Adding image for part: ${partId}`);
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: `/api/v1/parts/images/${partId}`,
+            body: formData,
+            mediaType: 'multipart/form-data',
+        });
+    }
+
+    public static async deletePartImage(
+        imageId: string
+    ): Promise<any> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: `/api/v1/parts/images/${imageId}`,
+        });
+    }
+
+    public static async replacePartImage(
+        partImageId: string,
+        file: File
+    ): Promise<any> {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: `/api/v1/parts/images/${partImageId}`,
+            body: formData,
+            mediaType: 'multipart/form-data',
         });
     }
 

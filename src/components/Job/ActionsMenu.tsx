@@ -29,7 +29,7 @@ const ActionsMenuJob = ({ type, value, disabled }: ActionsMenuProps) => {
     const canExecuteScraping = scrapingJob.status === 'pending';
     const canCreateEnrichment = scrapingJob.status === 'completed' && !enrichmentJob;
     const canExecuteEnrichment = enrichmentJob && enrichmentJob.status === 'pending';
-    const canViewDetails = scrapingJob.status === 'completed';
+    const canViewDetails = scrapingJob.status === 'completed' && enrichmentJob && enrichmentJob.status === 'completed';
 
     return (
         <>
