@@ -17,8 +17,8 @@ import {
 } from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
 
-import LightLogo from "/assets/images/fastapi-logo-light.png";
-import DarkLogo from "/assets/images/fastapi-logo-dark.png";
+import LightLogo from "/assets/images/mh-logo-light.png";
+import DarkLogo from "/assets/images/mh-logo-dark.png";
 import type { UserRegister } from "../client"
 import useAuth, { isLoggedIn } from "../hooks/useAuth"
 import { confirmPasswordRules, emailPattern, passwordRules } from "../utils"

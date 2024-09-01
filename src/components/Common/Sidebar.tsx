@@ -15,8 +15,8 @@ import {
 import { useQueryClient } from "@tanstack/react-query"
 import { FiLogOut, FiMenu } from "react-icons/fi"
 
-import LightLogo from "/assets/images/fastapi-logo-light.png";
-import DarkLogo from "/assets/images/fastapi-logo-dark.png";
+import LightLogo from "/assets/images/mh-logo-light.png";
+import DarkLogo from "/assets/images/mh-logo-dark.png";
 import type { UserPublic } from "../../client"
 import useAuth from "../../hooks/useAuth"
 import SidebarItems from "./SidebarItems"

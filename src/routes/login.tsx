@@ -20,8 +20,8 @@ import {
 } from "@tanstack/react-router";
 import { type SubmitHandler, useForm } from "react-hook-form";
 
-import LightLogo from "/assets/images/fastapi-logo-light.png";
-import DarkLogo from "/assets/images/fastapi-logo-dark.png";
+import LightLogo from "/assets/images/mh-logo-light.png";
+import DarkLogo from "/assets/images/mh-logo-dark.png";
 import type { Body_login_login_access_token as AccessToken } from "../client";
 import useAuth, { isLoggedIn } from "../hooks/useAuth";
 import { emailPattern } from "../utils";
