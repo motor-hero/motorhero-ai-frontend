@@ -11,7 +11,7 @@ import {
     Select,
     VStack,
     HStack,
-} from "@chakra-ui/react";
+} from '@chakra-ui/react'
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ApiError, JobsService } from "../../client";
 import useCustomToast from "../../hooks/useCustomToast";
@@ -24,6 +24,7 @@ interface EnrichJobModalProps {
 
 const EnrichJobModal = ({ isOpen, onClose, job }: EnrichJobModalProps) => {
     const [selectedEnrichmentType, setSelectedEnrichmentType] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
     const showToast = useCustomToast();
 
     const { data: serviceTypes, isLoading: isLoadingServiceTypes } = useQuery({
@@ -42,11 +43,14 @@ const EnrichJobModal = ({ isOpen, onClose, job }: EnrichJobModalProps) => {
             });
         },
         onSuccess: (data) => {
-            showToast("Success!", `Enrichment job created. Estimated cost: $${data.estimated_cost.toFixed(2)}`, "success");
-            onClose(); // Close the modal after showing the toast
+            showToast("Sucesso!", `Trabalho de enriquecimento criado. Custo estimado: $${data.estimated_cost.toFixed(2)}`, "success");
+            onClose();
         },
         onError: (err: ApiError) => {
-            showToast("Error", `Failed to create enrichment job: ${err.message}`, "error");
+            showToast("Erro", `Falha ao criar trabalho de enriquecimento: ${err.message}`, "error");
+        },
+        onSettled: () => {
+            setIsLoading(false);
         },
     });
 
@@ -55,12 +59,13 @@ const EnrichJobModal = ({ isOpen, onClose, job }: EnrichJobModalProps) => {
     };
 
     const handleCreateEnrichmentJob = () => {
+        setIsLoading(true);
         createEnrichmentJobMutation.mutate();
     };
 
     useEffect(() => {
         if (isOpen && (!job || !job.id)) {
-            showToast("Error", "Invalid job data", "error");
+            showToast("Erro", "Dados do trabalho inválidos", "error");
             onClose();
         }
     }, [isOpen, job, showToast, onClose]);
@@ -76,7 +81,7 @@ const EnrichJobModal = ({ isOpen, onClose, job }: EnrichJobModalProps) => {
                         <Select
                             placeholder="Selecione o tipo de enriquecimento"
                             onChange={handleEnrichmentTypeChange}
-                            isDisabled={isLoadingServiceTypes || createEnrichmentJobMutation.isLoading}
+                            isDisabled={isLoadingServiceTypes || isLoading}
                             value={selectedEnrichmentType}
                         >
                             {serviceTypes?.enrichment.map((service) => (
@@ -92,12 +97,13 @@ const EnrichJobModal = ({ isOpen, onClose, job }: EnrichJobModalProps) => {
                         <Button
                             colorScheme="blue"
                             onClick={handleCreateEnrichmentJob}
-                            isLoading={createEnrichmentJobMutation.isLoading}
-                            isDisabled={!selectedEnrichmentType}
+                            isLoading={isLoading}
+                            loadingText="Criando..."
+                            isDisabled={!selectedEnrichmentType || isLoading}
                         >
                             Criar Trabalho
                         </Button>
-                        <Button variant="ghost" onClick={onClose}>
+                        <Button variant="ghost" onClick={onClose} isDisabled={isLoading}>
                             Cancelar
                         </Button>
                     </HStack>

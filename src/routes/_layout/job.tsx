@@ -14,14 +14,14 @@ import {
     Progress,
     Tooltip,
     Text,
-    Box
+    Box, Badge
 } from "@chakra-ui/react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { z } from "zod";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
+import {createFileRoute, useNavigate} from "@tanstack/react-router";
+import {useEffect, useState} from "react";
+import {z} from "zod";
 
-import { JobsService } from "../../client";
+import {JobsService} from "../../client";
 import ActionsMenuJob from "../../components/Job/ActionsMenu.tsx";
 import Navbar from "../../components/Common/Navbar";
 import AddJob from "../../components/Job/AddJob";
@@ -43,10 +43,17 @@ const statusMapping = {
     failed: "Falhou",
 };
 
-function getJobsQueryOptions({ page }: { page: number }) {
+const colorSchemaMapping = {
+    pending: "gray",
+    in_progress: "blue",
+    completed: "green",
+    failed: "red",
+};
+
+function getJobsQueryOptions({page}: { page: number }) {
     return {
-        queryFn: () => JobsService.readJobs({ skip: (page - 1) * PER_PAGE, limit: PER_PAGE }),
-        queryKey: ["jobs", { page }],
+        queryFn: () => JobsService.readJobs({skip: (page - 1) * PER_PAGE, limit: PER_PAGE}),
+        queryKey: ["jobs", {page}],
         keepPreviousData: true,
         refetchInterval: 500,
     };
@@ -54,17 +61,17 @@ function getJobsQueryOptions({ page }: { page: number }) {
 
 function JobsTable() {
     const queryClient = useQueryClient();
-    const { page } = Route.useSearch();
-    const navigate = useNavigate({ from: Route.fullPath });
-    const setPage = (page: number) => navigate({ search: (prev) => ({ ...prev, page }) });
+    const {page} = Route.useSearch();
+    const navigate = useNavigate({from: Route.fullPath});
+    const setPage = (page: number) => navigate({search: (prev) => ({...prev, page})});
 
-    const [serviceTypes, setServiceTypes] = useState({ scraping: {}, enrichment: {} });
+    const [serviceTypes, setServiceTypes] = useState({scraping: {}, enrichment: {}});
 
     const {
         data: jobs,
         isPending,
         isPlaceholderData,
-    } = useQuery(getJobsQueryOptions({ page }));
+    } = useQuery(getJobsQueryOptions({page}));
 
     useEffect(() => {
         const fetchServiceTypes = async () => {
@@ -94,17 +101,17 @@ function JobsTable() {
 
     useEffect(() => {
         if (hasNextPage) {
-            queryClient.prefetchQuery(getJobsQueryOptions({ page: page + 1 }));
+            queryClient.prefetchQuery(getJobsQueryOptions({page: page + 1}));
         }
     }, [page, queryClient, hasNextPage]);
 
     return (
         <>
             <TableContainer>
-                <Table size={{ base: "sm", md: "md" }}>
+                <Table size={{base: "sm", md: "md"}}>
                     <Thead>
                         <Tr>
-                            <Th>ID</Th>
+                            <Th>Trabalho</Th>
                             <Th>Etapa</Th>
                             <Th>Status</Th>
                             <Th>Progresso</Th>
@@ -117,7 +124,7 @@ function JobsTable() {
                             <Tr>
                                 {new Array(5).fill(null).map((_, index) => (
                                     <Td key={index}>
-                                        <SkeletonText noOfLines={1} paddingBlock="16px" />
+                                        <SkeletonText noOfLines={1} paddingBlock="16px"/>
                                     </Td>
                                 ))}
                             </Tr>
@@ -126,9 +133,14 @@ function JobsTable() {
                         <Tbody>
                             {jobs?.map((job) => (
                                 <Tr key={job.id} opacity={isPlaceholderData ? 0.5 : 1}>
-                                    <Td>{job.id}</Td>
+                                    <Td>{job.name}</Td>
                                     <Td>{job.step === "scraping" ? "Scraping" : "Enriquecimento"}</Td>
-                                    <Td>{job.parent_job ? statusMapping[job.parent_job.status] : statusMapping[job.status]}</Td>
+                                    <Td>
+                                        <Badge
+                                            colorScheme={colorSchemaMapping[job.parent_job ? job.parent_job.status : job.status]}>
+                                            {job.parent_job ? statusMapping[job.parent_job.status] : statusMapping[job.status]}
+                                        </Badge>
+                                    </Td>
                                     <Td>
                                         <Box display="flex" alignItems="center" gap={2}>
                                             <Progress
@@ -144,7 +156,7 @@ function JobsTable() {
                                     </Td>
                                     <Td>{new Date(job.created_at).toLocaleString("pt-BR")}</Td>
                                     <Td>
-                                        <ActionsMenuJob type={"Trabalho"} value={job} />
+                                        <ActionsMenuJob type={"Trabalho"} value={job}/>
                                     </Td>
                                 </Tr>
                             ))}
@@ -174,12 +186,12 @@ function JobsTable() {
 function Jobs() {
     return (
         <Container maxW="full">
-            <Heading size="lg" textAlign={{ base: "center", md: "left" }} pt={12}>
+            <Heading size="lg" textAlign={{base: "center", md: "left"}} pt={12}>
                 Gerenciamento de Trabalhos
             </Heading>
 
-            <Navbar type={"Trabalho"} addModalAs={AddJob} />
-            <JobsTable />
+            <Navbar type={"Trabalho"} addModalAs={AddJob}/>
+            <JobsTable/>
         </Container>
     );
 }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Button, Menu, MenuButton, MenuItem, MenuList, useDisclosure } from '@chakra-ui/react';
+import { Button, Menu, MenuButton, MenuItem, MenuList, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Text, Box } from '@chakra-ui/react';
 import { BsThreeDotsVertical } from 'react-icons/bs';
-import { FiPlay, FiTrash, FiPlusCircle, FiEye } from 'react-icons/fi';
+import { FiPlay, FiTrash, FiPlusCircle, FiEye, FiAlertCircle } from 'react-icons/fi';
 import RunJobModal from './RunJob';
 import Delete from '../Common/DeleteAlert';
 import EnrichJobModal from './EnrichmentJob';
@@ -13,10 +13,36 @@ interface ActionsMenuProps {
     disabled?: boolean;
 }
 
+const ErrorDetailModal = ({ isOpen, onClose, errorMessage }) => (
+    <Modal isOpen={isOpen} onClose={onClose} size="xl">
+        <ModalOverlay />
+        <ModalContent>
+            <ModalHeader>Detalhes do Erro</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+                <Box overflowX="auto">
+                    <Text whiteSpace="pre-wrap" fontFamily="monospace">
+                        {errorMessage}
+                    </Text>
+                </Box>
+            </ModalBody>
+            <ModalFooter>
+                <Button colorScheme="blue" mr={3} onClick={onClose}>
+                    Fechar
+                </Button>
+                <Button colorScheme="blue" mr={3} onClick={() => navigator.clipboard.writeText(errorMessage)}>
+                    Copiar
+                </Button>
+            </ModalFooter>
+        </ModalContent>
+    </Modal>
+);
+
 const ActionsMenuJob = ({ type, value, disabled }: ActionsMenuProps) => {
     const runJobModal = useDisclosure();
     const deleteModal = useDisclosure();
     const enrichJobModal = useDisclosure();
+    const errorDetailModal = useDisclosure();
     const [isDetailModalOpen, setDetailModalOpen] = useState(false);
 
     const enrichmentJob = value.parent_job;
@@ -30,6 +56,7 @@ const ActionsMenuJob = ({ type, value, disabled }: ActionsMenuProps) => {
     const canCreateEnrichment = scrapingJob.status === 'completed' && !enrichmentJob;
     const canExecuteEnrichment = enrichmentJob && enrichmentJob.status === 'pending';
     const canViewDetails = scrapingJob.status === 'completed' && enrichmentJob && enrichmentJob.status === 'completed';
+    const canViewError = scrapingJob.status === 'failed' || (enrichmentJob && enrichmentJob.status === 'failed');
 
     return (
         <>
@@ -61,6 +88,11 @@ const ActionsMenuJob = ({ type, value, disabled }: ActionsMenuProps) => {
                             Ver Detalhes
                         </MenuItem>
                     )}
+                    {canViewError && (
+                        <MenuItem onClick={errorDetailModal.onOpen} icon={<FiAlertCircle fontSize="16px" />} color="red.500">
+                            Ver Erro
+                        </MenuItem>
+                    )}
                     <MenuItem onClick={deleteModal.onOpen} icon={<FiTrash fontSize="16px" />} color="ui.danger">
                         Deletar {type}
                     </MenuItem>
@@ -84,6 +116,14 @@ const ActionsMenuJob = ({ type, value, disabled }: ActionsMenuProps) => {
                     isOpen={isDetailModalOpen}
                     onClose={() => setDetailModalOpen(false)}
                     jobId={scrapingJob.id}
+                />
+            )}
+
+            {canViewError && (
+                <ErrorDetailModal
+                    isOpen={errorDetailModal.isOpen}
+                    onClose={errorDetailModal.onClose}
+                    errorMessage={enrichmentJob?.error_message || scrapingJob.error_message}
                 />
             )}
         </>
