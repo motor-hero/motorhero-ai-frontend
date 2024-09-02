@@ -584,7 +584,7 @@ export class JobsService {
         const {limit = 100, skip = 0} = data;
         return __request(OpenAPI, {
             method: "GET",
-            url: "/api/v1/jobs",
+            url: "/api/v1/jobs/",
             query: {
                 skip,
                 limit,
@@ -741,7 +741,7 @@ export class JobsService {
     }): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/dashboard',
+            url: '/api/v1/dashboard/',
             query: params,
         });
     }
