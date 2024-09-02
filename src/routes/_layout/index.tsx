@@ -121,12 +121,12 @@ function StrategicDashboard() {
     const verifiedParts = partStatistics.partsVerified || 0;
     const enrichedParts = partStatistics.partsEnriched || 0;
     const notFoundParts = partStatistics.partsNotFound || 0;
-    const toBeVerifiedParts = verifiedParts - enrichedParts;
+    const notVerifiedParts = partStatistics.partsNotVerified;
     const scrapedParts = totalParts - notFoundParts;
 
     const partStatusData = [
         { name: 'Verificadas', value: verifiedParts },
-        { name: 'A Verificar', value: toBeVerifiedParts },
+        { name: 'A Verificar', value: notVerifiedParts },
         { name: 'Não Encontradas', value: notFoundParts },
     ];
 
@@ -281,7 +281,7 @@ function StrategicDashboard() {
                             </Stat>
                             <Stat>
                                 <StatLabel>Peças a Verificar</StatLabel>
-                                <StatNumber>{toBeVerifiedParts}</StatNumber>
+                                <StatNumber>{notVerifiedParts}</StatNumber>
                             </Stat>
                             <Stat>
                                 <StatLabel>Peças Não Encontradas</StatLabel>

@@ -1,32 +1,23 @@
-# Build stage
-FROM node:18-alpine as build
+# Stage 0, "build-stage", based on Node.js, to build and compile the frontend
+FROM node:20 AS build-stage
 
-# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+COPY package*.json /app/
 
-# Install dependencies
-RUN npm i
+RUN npm install --legacy-peer-deps
 
-# Copy the rest of the code
-COPY . .
+COPY ./ /app/
 
-# Generate router files
-RUN npm run generate-router
+ARG VITE_API_URL=${VITE_API_URL}
 
-# Build the app
 RUN npm run build
 
-# Create a tarball of the build output
-RUN tar -czvf dist.tar.gz -C dist .
 
-# Final stage
-FROM alpine:latest
+# Stage 1, based on Nginx, to have only the compiled app, ready for production with Nginx
+FROM nginx:1
 
-# Copy the tarball from the build stage
-COPY --from=build /app/dist.tar.gz /dist.tar.gz
+COPY --from=build-stage /app/dist/ /usr/share/nginx/html
 
-# Set the entrypoint to simply exist (this container won't actually run)
-ENTRYPOINT ["tail", "-f", "/dev/null"]
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./nginx-backend-not-found.conf /etc/nginx/extra-conf.d/backend-not-found.conf
