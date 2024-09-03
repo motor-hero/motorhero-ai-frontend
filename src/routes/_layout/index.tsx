@@ -1,21 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from '@tanstack/react-query';
+import React, {useState, useEffect} from 'react';
+import {createFileRoute} from "@tanstack/react-router";
+import {useQuery} from '@tanstack/react-query';
 import {
     Box, Container, Text, Heading, Flex, Stat, StatLabel, StatNumber, StatHelpText, StatArrow,
     Table, Thead, Tbody, Tr, Th, Td, TableContainer,
     Card, CardHeader, CardBody,
-    Progress, Badge,
-    Select, Input, Button,
+    Input,
     SimpleGrid, HStack, VStack,
-    Spinner, useColorModeValue,
-    RadioGroup, Radio, Stack
+    RadioGroup, Radio, Stack, Alert, AlertIcon, AlertTitle, AlertDescription
 } from '@chakra-ui/react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
     ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area
 } from 'recharts';
-import { JobsService } from '../../client';
+import {JobsService} from '../../client';
 import useAuth from "../../hooks/useAuth";
 
 const COLORS = ['#4299E1', '#48BB78', '#ECC94B', '#F56565'];
@@ -39,13 +37,13 @@ export const Route = createFileRoute("/_layout/")({
 });
 
 function StrategicDashboard() {
-    const { user: currentUser } = useAuth();
+    const {user: currentUser} = useAuth();
     const [filters, setFilters] = useState({
         date_range: 'month',
         date_from: '',
         date_to: '',
     });
-    const [serviceTypes, setServiceTypes] = useState({ scraping: [], enrichment: [] });
+    const [serviceTypes, setServiceTypes] = useState({scraping: [], enrichment: []});
 
     useEffect(() => {
         if (filters.date_range !== 'custom') {
@@ -82,7 +80,7 @@ function StrategicDashboard() {
         JobsService.getServiceTypes().then(setServiceTypes);
     }, []);
 
-    const { data, error, isLoading } = useQuery({
+    const {data, error, isLoading} = useQuery({
         queryKey: ['strategicDashboardData', filters],
         queryFn: () => JobsService.getDashboardData({
             date_from: filters.date_from,
@@ -91,7 +89,7 @@ function StrategicDashboard() {
     });
 
     const handleDateRangeChange = (value) => {
-        setFilters(prev => ({ ...prev, date_range: value }));
+        setFilters(prev => ({...prev, date_range: value}));
     };
 
     const safeNumberFormat = (value, decimals = 2) => {
@@ -102,9 +100,67 @@ function StrategicDashboard() {
         return parsedValue.toFixed(decimals);
     };
 
-    if (isLoading) return <Spinner />;
-    if (error) return <Text>Erro ao carregar dados do painel: {error.message}</Text>;
-    if (!data) return <Text>Nenhum dado disponível.</Text>;
+    if (error) {
+        return (
+            <Container maxW="full" p={4}>
+                <Box pt={12} mb={8}>
+                    <Heading size="xl" mb={2}>Painel Estratégico</Heading>
+                    <Text fontSize="lg">
+                        Olá, {currentUser?.full_name || currentUser?.email} 👋🏼
+                    </Text>
+                    <Text>Bem-vindo ao seu painel estratégico.</Text>
+                </Box>
+                <Container maxW="full" h="100vh" centerContent>
+                    <Alert
+                        status="error"
+                        variant="subtle"
+                        flexDirection="column"
+                        alignItems="center"
+                        justifyContent="center"
+                        textAlign="center"
+                        height="200px"
+                        borderRadius="md"
+                    >
+                        <AlertIcon boxSize="40px" mr={0}/>
+                        <AlertTitle mt={4} mb={1} fontSize="lg">
+                            Erro ao carregar dados
+                        </AlertTitle>
+                        <AlertDescription maxWidth="sm">
+                            {error.message || "Ocorreu um erro ao carregar os dados do painel. Por favor, tente novamente mais tarde."}
+                        </AlertDescription>
+                    </Alert>
+                </Container>
+            </Container>
+        );
+    }
+
+    if (!data || data?.kpis.length === 0) {
+        return (
+            <Container maxW="full" p={4}>
+                <Box pt={12} mb={8}>
+                    <Heading size="xl" mb={2}>Painel Estratégico</Heading>
+                    <Text fontSize="lg">
+                        Olá, {currentUser?.full_name || currentUser?.email} 👋🏼
+                    </Text>
+                    <Text>Bem-vindo ao seu painel estratégico.</Text>
+                </Box>
+                <Container maxW="full" h="100vh" centerContent>
+                    <VStack spacing={4} justify="center" align="center">
+                        <Box
+                            p={5}
+                            shadow="md"
+                            borderWidth="1px"
+                            borderRadius="md"
+                            textAlign="center"
+                        >
+                            <Heading size="md" mb={2}>Nenhum dado disponível</Heading>
+                            <Text>Não há dados para exibir no painel neste momento.</Text>
+                        </Box>
+                    </VStack>
+                </Container>
+            </Container>
+        );
+    }
 
     const {
         kpis = {},
@@ -125,9 +181,9 @@ function StrategicDashboard() {
     const scrapedParts = totalParts - notFoundParts;
 
     const partStatusData = [
-        { name: 'Verificadas', value: verifiedParts },
-        { name: 'A Verificar', value: notVerifiedParts },
-        { name: 'Não Encontradas', value: notFoundParts },
+        {name: 'Verificadas', value: verifiedParts},
+        {name: 'A Verificar', value: notVerifiedParts},
+        {name: 'Não Encontradas', value: notFoundParts},
     ];
 
     return (
@@ -159,13 +215,13 @@ function StrategicDashboard() {
                                     type="date"
                                     name="date_from"
                                     value={filters.date_from}
-                                    onChange={(e) => setFilters(prev => ({ ...prev, date_from: e.target.value }))}
+                                    onChange={(e) => setFilters(prev => ({...prev, date_from: e.target.value}))}
                                 />
                                 <Input
                                     type="date"
                                     name="date_to"
                                     value={filters.date_to}
-                                    onChange={(e) => setFilters(prev => ({ ...prev, date_to: e.target.value }))}
+                                    onChange={(e) => setFilters(prev => ({...prev, date_to: e.target.value}))}
                                 />
                             </HStack>
                         )}
@@ -178,7 +234,7 @@ function StrategicDashboard() {
                         <StatLabel>Total de Trabalhos</StatLabel>
                         <StatNumber>{kpis.totalJobs || 0}</StatNumber>
                         <StatHelpText>
-                            <StatArrow type={kpis.jobGrowth >= 0 ? 'increase' : 'decrease'} />
+                            <StatArrow type={kpis.jobGrowth >= 0 ? 'increase' : 'decrease'}/>
                             {safeNumberFormat(Math.abs(kpis.jobGrowth))}% em relação ao período anterior
                         </StatHelpText>
                     </Stat>
@@ -186,7 +242,7 @@ function StrategicDashboard() {
                         <StatLabel>Taxa de Sucesso</StatLabel>
                         <StatNumber>{safeNumberFormat(kpis.successRate)}%</StatNumber>
                         <StatHelpText>
-                            <StatArrow type={kpis.successRateChange >= 0 ? 'increase' : 'decrease'} />
+                            <StatArrow type={kpis.successRateChange >= 0 ? 'increase' : 'decrease'}/>
                             {safeNumberFormat(Math.abs(kpis.successRateChange))}% em relação ao período anterior
                         </StatHelpText>
                     </Stat>
@@ -194,7 +250,7 @@ function StrategicDashboard() {
                         <StatLabel>Tempo Médio de Processamento</StatLabel>
                         <StatNumber>{safeNumberFormat(kpis.avgProcessingTime)} horas</StatNumber>
                         <StatHelpText>
-                            <StatArrow type={kpis.avgProcessingTimeChange <= 0 ? 'increase' : 'decrease'} />
+                            <StatArrow type={kpis.avgProcessingTimeChange <= 0 ? 'increase' : 'decrease'}/>
                             {safeNumberFormat(Math.abs(kpis.avgProcessingTimeChange))}% em relação ao período anterior
                         </StatHelpText>
                     </Stat>
@@ -202,7 +258,7 @@ function StrategicDashboard() {
                         <StatLabel>Custo Médio por Trabalho</StatLabel>
                         <StatNumber>$ {safeNumberFormat(kpis.avgCostPerJob)}</StatNumber>
                         <StatHelpText>
-                            <StatArrow type={kpis.avgCostPerJobChange <= 0 ? 'increase' : 'decrease'} />
+                            <StatArrow type={kpis.avgCostPerJobChange <= 0 ? 'increase' : 'decrease'}/>
                             {safeNumberFormat(Math.abs(kpis.avgCostPerJobChange))}% em relação ao período anterior
                         </StatHelpText>
                     </Stat>
@@ -231,8 +287,8 @@ function StrategicDashboard() {
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>
                                         ))}
                                     </Pie>
-                                    <Tooltip />
-                                    <Legend />
+                                    <Tooltip/>
+                                    <Legend/>
                                 </PieChart>
                             </ResponsiveContainer>
                         </CardBody>
@@ -306,8 +362,8 @@ function StrategicDashboard() {
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>
                                         ))}
                                     </Pie>
-                                    <Tooltip />
-                                    <Legend />
+                                    <Tooltip/>
+                                    <Legend/>
                                 </PieChart>
                             </ResponsiveContainer>
                         </Box>
@@ -322,12 +378,12 @@ function StrategicDashboard() {
                     <CardBody>
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={dailyJobsData}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="date" />
-                                <YAxis />
-                                <Tooltip />
-                                <Legend />
-                                <Line type="monotone" dataKey="jobs" stroke="#8884d8" />
+                                <CartesianGrid strokeDasharray="3 3"/>
+                                <XAxis dataKey="date"/>
+                                <YAxis/>
+                                <Tooltip/>
+                                <Legend/>
+                                <Line type="monotone" dataKey="jobs" stroke="#8884d8"/>
                             </LineChart>
                         </ResponsiveContainer>
                     </CardBody>
@@ -341,14 +397,16 @@ function StrategicDashboard() {
                     <CardBody>
                         <ResponsiveContainer width="100%" height={300}>
                             <AreaChart data={efficiencyTrend}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="date" />
-                                <YAxis yAxisId="left" />
-                                <YAxis yAxisId="right" orientation="right" />
-                                <Tooltip />
-                                <Legend />
-                                <Area yAxisId="left" type="monotone" dataKey="successRate" name="Taxa de Sucesso (%)" stroke="#82ca9d" fill="#82ca9d" />
-                                <Area yAxisId="right" type="monotone" dataKey="averageTime" name="Tempo Médio (horas)" stroke="#8884d8" fill="#8884d8" />
+                                <CartesianGrid strokeDasharray="3 3"/>
+                                <XAxis dataKey="date"/>
+                                <YAxis yAxisId="left"/>
+                                <YAxis yAxisId="right" orientation="right"/>
+                                <Tooltip/>
+                                <Legend/>
+                                <Area yAxisId="left" type="monotone" dataKey="successRate" name="Taxa de Sucesso (%)"
+                                      stroke="#82ca9d" fill="#82ca9d"/>
+                                <Area yAxisId="right" type="monotone" dataKey="averageTime" name="Tempo Médio (horas)"
+                                      stroke="#8884d8" fill="#8884d8"/>
                             </AreaChart>
                         </ResponsiveContainer>
                     </CardBody>
