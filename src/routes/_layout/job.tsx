@@ -55,7 +55,7 @@ function getJobsQueryOptions({page}: { page: number }) {
         queryFn: () => JobsService.readJobs({skip: (page - 1) * PER_PAGE, limit: PER_PAGE}),
         queryKey: ["jobs", {page}],
         keepPreviousData: true,
-        refetchInterval: 500,
+        refetchInterval: 1000,
     };
 }
 
