@@ -50,6 +50,7 @@ const JobDetailModal = ({ isOpen, onClose, jobId }) => {
     const queryClient = useQueryClient();
     const currentUser = queryClient.getQueryData(["currentUser"]);
     const modalContentRef = React.useRef(null);
+    const modalBodyRef = useRef(null);
     const [isDownloadingEnriched, setDownloadingEnriched] = useState(false);
     const [isDownloadingScraped, setDownloadingScraped] = useState(false);
     const [isDownloadingImages, setDownloadingImages] = useState(false);
@@ -78,20 +79,18 @@ const JobDetailModal = ({ isOpen, onClose, jobId }) => {
 
     const toast = useToast();
 
-    const scrollToTop = () => {
-        if (modalContentRef.current) {
-            modalContentRef.current.scrollTop = 0;
+    useEffect(() => {
+        if (modalBodyRef.current) {
+            modalBodyRef.current.scrollTop = 0;
         }
-    };
+    }, [currentPage, verificationPage]);
 
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
-        scrollToTop();
     };
 
     const handleVerificationPageChange = (newPage) => {
         setVerificationPage(newPage);
-        scrollToTop();
     };
 
     const statusColor = useCallback((status) => {
@@ -334,7 +333,7 @@ const JobDetailModal = ({ isOpen, onClose, jobId }) => {
                         <Badge ml={2} colorScheme={statusColor(job.status)}>{job.status}</Badge>
                     </ModalHeader>
                     <ModalCloseButton />
-                    <ModalBody>
+                    <ModalBody ref={modalBodyRef}>
                         <Tabs isFitted variant="enclosed">
                             <TabList mb="1em">
                                 <Tab>Visão Geral</Tab>
