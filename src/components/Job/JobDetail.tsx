@@ -49,8 +49,6 @@ import {FiAlertCircle, FiCheckCircle, FiClock, FiDollarSign, FiPackage} from "re
 const JobDetailModal = ({ isOpen, onClose, jobId }) => {
     const queryClient = useQueryClient();
     const currentUser = queryClient.getQueryData(["currentUser"]);
-    const modalContentRef = React.useRef(null);
-    const modalBodyRef = useRef(null);
     const [isDownloadingEnriched, setDownloadingEnriched] = useState(false);
     const [isDownloadingScraped, setDownloadingScraped] = useState(false);
     const [isDownloadingImages, setDownloadingImages] = useState(false);
@@ -79,18 +77,24 @@ const JobDetailModal = ({ isOpen, onClose, jobId }) => {
 
     const toast = useToast();
 
+
+    const scrollToTop = useCallback(() => {
+        setTimeout(() => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }, 100);
+    }, []);
+
     useEffect(() => {
-        if (modalBodyRef.current) {
-            modalBodyRef.current.scrollTop = 0;
+        if (isOpen) {
+            scrollToTop();
         }
-    }, [currentPage, verificationPage]);
+    }, [currentPage, verificationPage, isOpen, scrollToTop]);
 
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
-    };
-
-    const handleVerificationPageChange = (newPage) => {
-        setVerificationPage(newPage);
     };
 
     const statusColor = useCallback((status) => {
@@ -325,7 +329,7 @@ const JobDetailModal = ({ isOpen, onClose, jobId }) => {
 
     return (
         <>
-            <Modal isOpen={isOpen} onClose={onClose} size="full">
+            <Modal isOpen={isOpen} onClose={onClose} size="full" scrollBehavior="inside">
                 <ModalOverlay />
                 <ModalContent bg={bgColor}>
                     <ModalHeader color={textColor}>
@@ -333,7 +337,7 @@ const JobDetailModal = ({ isOpen, onClose, jobId }) => {
                         <Badge ml={2} colorScheme={statusColor(job.status)}>{job.status}</Badge>
                     </ModalHeader>
                     <ModalCloseButton />
-                    <ModalBody ref={modalBodyRef}>
+                    <ModalBody>
                         <Tabs isFitted variant="enclosed">
                             <TabList mb="1em">
                                 <Tab>Visão Geral</Tab>
@@ -605,7 +609,7 @@ const JobDetailModal = ({ isOpen, onClose, jobId }) => {
 
             <Modal isOpen={isJsonModalOpen} onClose={onJsonModalClose} size="xl">
                 <ModalOverlay />
-                <ModalContent bg={bgColor} ref={modalContentRef}>
+                <ModalContent bg={bgColor}>
                     <ModalHeader color={textColor}>Dados JSON</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
