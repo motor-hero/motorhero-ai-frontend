@@ -4,7 +4,7 @@ import {
     Table, Thead, Tbody, Tr, Th, Td, Badge, Modal, ModalOverlay, ModalContent, ModalHeader,
     ModalCloseButton, ModalBody, ModalFooter, useDisclosure, Link, useColorModeValue,
     Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIcon,
-    Icon, Tooltip, SimpleGrid, Image, IconButton, Spinner
+    Icon, Tooltip, SimpleGrid, Image, IconButton, Spinner, Textarea
 } from '@chakra-ui/react';
 import {JobsService} from '../../client';
 import {ExternalLinkIcon, DeleteIcon, RepeatIcon, AddIcon} from "@chakra-ui/icons";
@@ -17,15 +17,13 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
     const [verifiedBy, setVerifiedBy] = useState(part.verified_by);
     const [verifiedAt, setVerifiedAt] = useState(part.verified_at);
     const [images, setImages] = useState(part.images || []);
-    const [loadingImageActions, setLoadingImageActions] = useState<{ [key: string]: boolean }>({});
+    const [loadingImageActions, setLoadingImageActions] = useState({});
     const toast = useToast();
 
     const bgColor = useColorModeValue('white', 'gray.800');
     const borderColor = useColorModeValue('gray.200', 'gray.600');
 
-    const {isOpen: isJsonModalOpen, onOpen: onJsonModalOpen, onClose: onJsonModalClose} = useDisclosure();
     const {isOpen: isImageModalOpen, onOpen: onImageModalOpen, onClose: onImageModalClose} = useDisclosure();
-    const [selectedJson, setSelectedJson] = useState(null);
     const [selectedImage, setSelectedImage] = useState(null);
 
     useEffect(() => {
@@ -39,7 +37,6 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
 
     const handleVerify = async () => {
         try {
-
             const dataToSend = {
                 is_verified: true,
                 enriched_data: isDataChanged ? enrichedData : null,
@@ -56,14 +53,14 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
                 verified_at: new Date().toISOString()
             });
             toast({
-                title: "Parte verificada",
+                title: "Peça verificada",
                 description: "A verificação foi salva com sucesso.",
                 status: "success",
                 duration: 3000,
                 isClosable: true,
             });
         } catch (error) {
-            console.error("Erro ao verificar parte:", error);
+            console.error("Erro ao verificar peça:", error);
             toast({
                 title: "Erro na verificação",
                 description: "Ocorreu um erro ao salvar a verificação.",
@@ -90,15 +87,15 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
             await JobsService.deletePartImage(image.id);
             setImages(prevImages => prevImages.filter(img => img.id !== image.id));
             toast({
-                title: "Imagem deletada",
+                title: "Imagem excluída",
                 status: "success",
                 duration: 3000,
                 isClosable: true,
             });
         } catch (error) {
-            console.error("Erro ao deletar imagem:", error);
+            console.error("Erro ao excluir imagem:", error);
             toast({
-                title: "Erro ao deletar imagem",
+                title: "Erro ao excluir imagem",
                 status: "error",
                 duration: 3000,
                 isClosable: true,
@@ -133,7 +130,7 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
     };
 
     const handleImageAdd = async (file) => {
-        setLoadingImageActions((prev) => ({ ...prev, 'add': true }));
+        setLoadingImageActions((prev) => ({...prev, 'add': true}));
         try {
             const formData = new FormData();
             formData.append('file', file);
@@ -156,19 +153,8 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
                 isClosable: true,
             });
         } finally {
-            setLoadingImageActions((prev) => ({ ...prev, 'add': false }));
+            setLoadingImageActions((prev) => ({...prev, 'add': false}));
         }
-    };
-
-    const formatJson = (json) => {
-        if (typeof json === 'string') {
-            try {
-                json = JSON.parse(json);
-            } catch (e) {
-                return json;
-            }
-        }
-        return JSON.stringify(json, null, 2);
     };
 
     const renderDataTable = (data, isEditable = false) => (
@@ -182,7 +168,7 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
             <Tbody>
                 {Object.entries(data).map(([key, value]) => (
                     <Tr key={key}>
-                        <Td fontWeight="bold">{key}</Td>
+                        <Td fontWeight="bold">{translateField(key)}</Td>
                         <Td>
                             {renderTableCell(key, value, isEditable)}
                         </Td>
@@ -193,16 +179,34 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
     );
 
     const renderTableCell = (key, value, isEditable) => {
-        if (key === 'description' && typeof value === 'string' && value.length > 100) {
+        if (key === 'description' && typeof value === 'string' && value.length > 255) {
+            const shortDescription = value.slice(0, 255);
+            const fullDescription = value;
+
             return (
                 <Accordion allowToggle>
                     <AccordionItem border="none">
-                        <AccordionButton pl={0} _hover={{bg: 'transparent'}}>
-                            <Text>{value.slice(0, 100)}...</Text>
-                            <AccordionIcon ml={2}/>
+                        <AccordionButton
+                            pl={0}
+                            _hover={{ bg: 'transparent' }}
+                            _expanded={{ fontWeight: 'bold' }}
+                        >
+                            <Box flex="1" textAlign="left">
+                                <Text noOfLines={3}>{shortDescription}</Text>
+                            </Box>
+                            <AccordionIcon />
                         </AccordionButton>
                         <AccordionPanel pb={4} pl={0}>
-                            {value}
+                            {isEditable ? (
+                                <Textarea
+                                    value={fullDescription}
+                                    onChange={(e) => handleDataChange(key, e.target.value)}
+                                    rows={8}
+                                    resize="vertical"
+                                />
+                            ) : (
+                                <Text whiteSpace="pre-wrap">{fullDescription}</Text>
+                            )}
                         </AccordionPanel>
                     </AccordionItem>
                 </Accordion>
@@ -212,8 +216,18 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
         } else if (key === 'url') {
             return (
                 <Link href={value} isExternal color="teal.500">
-                    Abrir URL <ExternalLinkIcon mx="2px"/>
+                    Open URL <ExternalLinkIcon mx="2px" />
                 </Link>
+            );
+        } else if (key === 'catalog_catalog.application_table') {
+            return (
+                <Textarea
+                    value={value || ''}
+                    onChange={(e) => handleDataChange(key, e.target.value)}
+                    size="sm"
+                    resize="vertical"
+                    maxH="100px"
+                />
             );
         } else if (isEditable) {
             return (
@@ -225,6 +239,24 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
         } else {
             return typeof value === 'object' ? JSON.stringify(value) : value.toString();
         }
+    };
+
+
+    const translateField = (field) => {
+        const translations = {
+            'title': 'Título',
+            'description': 'Descrição',
+            'price': 'Preço',
+            'url': 'URL',
+            'attributes': 'Atributos',
+            'catalog_catalog.code': 'Código do Catálogo',
+            'catalog_catalog.description': 'Descrição do Catálogo',
+            'catalog_catalog.full_description': 'Descrição Completa',
+            'catalog_catalog.application_table': 'Tabela de Aplicação',
+            'catalog_catalog.similar_parts': 'Peças Similares',
+            'catalog_catalog.brand_producer': 'Marca/Fabricante',
+        };
+        return translations[field] || field;
     };
 
     if (part.status.toLowerCase() === 'not_found') {
@@ -253,7 +285,7 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
 
             <SimpleGrid columns={2} spacing={4}>
                 <Box>
-                    <Heading size="sm" mb={2}>Dados Scraped:</Heading>
+                    <Heading size="sm" mb={2}>Dados Obtidos:</Heading>
                     {renderDataTable(part.scraped_data || {})}
                 </Box>
                 <Box>
@@ -269,7 +301,7 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
                         <Box key={`${image.id}-${index}`} position="relative">
                             <Image
                                 src={image.url}
-                                alt={`Image ${index + 1}`}
+                                alt={`Imagem ${index + 1}`}
                                 borderRadius="md"
                                 objectFit="cover"
                                 w="100%"
@@ -290,14 +322,14 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
                                     <Spinner size="sm" color="white"/>
                                 ) : (
                                     <>
-                                        <Tooltip label="Deletar Imagem">
+                                        <Tooltip label="Excluir Imagem">
                                             <IconButton
                                                 icon={<DeleteIcon/>}
                                                 size="sm"
                                                 variant="ghost"
                                                 colorScheme="red"
                                                 onClick={() => handleImageDelete(image)}
-                                                aria-label="Delete image"
+                                                aria-label="Excluir imagem"
                                             />
                                         </Tooltip>
                                         <Tooltip label="Substituir Imagem">
@@ -318,7 +350,7 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
                                                     };
                                                     fileInput.click();
                                                 }}
-                                                aria-label="Replace image"
+                                                aria-label="Substituir imagem"
                                             />
                                         </Tooltip>
                                     </>
@@ -340,10 +372,10 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
                         onClick={() => document.getElementById(`add-image-input-${part.id}`).click()}
                     >
                         {loadingImageActions['add'] ? (
-                            <Spinner size="lg" color="gray.400" />
+                            <Spinner size="lg" color="gray.400"/>
                         ) : (
                             <VStack>
-                                <Icon as={AddIcon} w={8} h={8} color="gray.400" />
+                                <Icon as={AddIcon} w={8} h={8} color="gray.400"/>
                                 <Text color="gray.500">Adicionar Imagem</Text>
                             </VStack>
                         )}
@@ -351,7 +383,7 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
                             id={`add-image-input-${part.id}`}
                             type="file"
                             accept="image/*"
-                            style={{ display: 'none' }}
+                            style={{display: 'none'}}
                             onChange={(e) => {
                                 const file = e.target.files[0];
                                 if (file) {
@@ -373,46 +405,13 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
                 {isVerified ? 'Atualizar' : 'Verificar'}
             </Button>
 
-            <Modal isOpen={isJsonModalOpen} onClose={onJsonModalClose} size="xl">
-                <ModalOverlay/>
-                <ModalContent bg={bgColor}>
-                    <ModalHeader>Descrição Completa</ModalHeader>
-                    <ModalCloseButton/>
-                    <ModalBody>
-                        <Box
-                            overflowY="auto"
-                            maxHeight="70vh"
-                            css={{
-                                '&::-webkit-scrollbar': {
-                                    width: '4px',
-                                },
-                                '&::-webkit-scrollbar-track': {
-                                    width: '6px',
-                                },
-                                '&::-webkit-scrollbar-thumb': {
-                                    background: 'gray',
-                                    borderRadius: '24px',
-                                },
-                            }}
-                        >
-                            <pre style={{whiteSpace: 'pre-wrap', wordWrap: 'break-word'}}>
-                                {formatJson(selectedJson)}
-                            </pre>
-                        </Box>
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button onClick={onJsonModalClose}>Fechar</Button>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal>
-
             <Modal isOpen={isImageModalOpen} onClose={onImageModalClose} size="xl">
                 <ModalOverlay/>
                 <ModalContent bg={bgColor}>
-                    <ModalHeader>Imagem</ModalHeader>
+                    <ModalHeader>Visualizar Imagem</ModalHeader>
                     <ModalCloseButton/>
                     <ModalBody>
-                        <Image src={selectedImage?.url} alt="Selected image"/>
+                        <Image src={selectedImage?.url} alt="Imagem selecionada" maxH="70vh" mx="auto"/>
                     </ModalBody>
                     <ModalFooter>
                         <Button colorScheme="blue" mr={3} onClick={() => {
@@ -421,7 +420,7 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
                             fileInput.accept = 'image/*';
                             fileInput.onchange = (e) => {
                                 const file = e.target.files[0];
-                                if (file) {
+                                if (file && selectedImage) {
                                     handleImageReplace(selectedImage, file);
                                     onImageModalClose();
                                 }

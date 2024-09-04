@@ -134,7 +134,7 @@ function StrategicDashboard() {
         );
     }
 
-    if (!isLoading || !data || data?.kpis.length === 0) {
+    if (!data || data?.kpis.length === 0) {
         return (
             <Container maxW="full" p={4}>
                 <Box pt={12} mb={8}>
