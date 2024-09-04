@@ -49,6 +49,7 @@ import {FiAlertCircle, FiCheckCircle, FiClock, FiDollarSign, FiPackage} from "re
 const JobDetailModal = ({ isOpen, onClose, jobId }) => {
     const queryClient = useQueryClient();
     const currentUser = queryClient.getQueryData(["currentUser"]);
+    const modalContentRef = React.useRef(null);
     const [isDownloadingEnriched, setDownloadingEnriched] = useState(false);
     const [isDownloadingScraped, setDownloadingScraped] = useState(false);
     const [isDownloadingImages, setDownloadingImages] = useState(false);
@@ -76,6 +77,22 @@ const JobDetailModal = ({ isOpen, onClose, jobId }) => {
     const [selectedJson, setSelectedJson] = useState(null);
 
     const toast = useToast();
+
+    const scrollToTop = () => {
+        if (modalContentRef.current) {
+            modalContentRef.current.scrollTop = 0;
+        }
+    };
+
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
+        scrollToTop();
+    };
+
+    const handleVerificationPageChange = (newPage) => {
+        setVerificationPage(newPage);
+        scrollToTop();
+    };
 
     const statusColor = useCallback((status) => {
         switch (status?.toLowerCase()) {
@@ -495,7 +512,7 @@ const JobDetailModal = ({ isOpen, onClose, jobId }) => {
                                                     <IconButton
                                                         aria-label="Página Anterior"
                                                         icon={<ChevronLeftIcon />}
-                                                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                                        onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
                                                         isDisabled={currentPage === 1}
                                                     />
                                                     <Spacer />
@@ -504,7 +521,7 @@ const JobDetailModal = ({ isOpen, onClose, jobId }) => {
                                                     <IconButton
                                                         aria-label="Próxima Página"
                                                         icon={<ChevronRightIcon />}
-                                                        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                                                        onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
                                                         isDisabled={currentPage === totalPages}
                                                     />
                                                 </Flex>
@@ -589,7 +606,7 @@ const JobDetailModal = ({ isOpen, onClose, jobId }) => {
 
             <Modal isOpen={isJsonModalOpen} onClose={onJsonModalClose} size="xl">
                 <ModalOverlay />
-                <ModalContent bg={bgColor}>
+                <ModalContent bg={bgColor} ref={modalContentRef}>
                     <ModalHeader color={textColor}>Dados JSON</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
