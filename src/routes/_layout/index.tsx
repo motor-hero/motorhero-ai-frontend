@@ -144,20 +144,6 @@ function StrategicDashboard() {
                     </Text>
                     <Text>Bem-vindo ao seu painel estratégico.</Text>
                 </Box>
-                <Container maxW="full" h="100vh" centerContent>
-                    <VStack spacing={4} justify="center" align="center">
-                        <Box
-                            p={5}
-                            shadow="md"
-                            borderWidth="1px"
-                            borderRadius="md"
-                            textAlign="center"
-                        >
-                            <Heading size="md" mb={2}>Nenhum dado disponível</Heading>
-                            <Text>Não há dados para exibir no painel neste momento.</Text>
-                        </Box>
-                    </VStack>
-                </Container>
             </Container>
         );
     }

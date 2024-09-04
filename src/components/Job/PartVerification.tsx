@@ -177,7 +177,7 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
             </Tbody>
         </Table>
     );
-    
+
 
     const renderTableCell = (key, value, isEditable) => {
         if (key === 'description' && typeof value === 'string' && value.length > 500) {
