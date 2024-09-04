@@ -7,7 +7,7 @@ import {
     Icon, Tooltip, SimpleGrid, Image, IconButton, Spinner, Textarea
 } from '@chakra-ui/react';
 import {JobsService} from '../../client';
-import {ExternalLinkIcon, DeleteIcon, RepeatIcon, AddIcon} from "@chakra-ui/icons";
+import {ExternalLinkIcon, DeleteIcon, RepeatIcon, AddIcon, ChevronUpIcon, ChevronDownIcon} from "@chakra-ui/icons";
 import {FiCheckCircle, FiAlertCircle, FiEdit} from "react-icons/fi";
 
 const PartVerificationComponent = ({part, onVerified, currentUser}) => {
@@ -177,39 +177,49 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
             </Tbody>
         </Table>
     );
+    
 
     const renderTableCell = (key, value, isEditable) => {
-        if (key === 'description' && typeof value === 'string' && value.length > 255) {
-            const shortDescription = value.slice(0, 255);
-            const fullDescription = value;
+        if (key === 'description' && typeof value === 'string' && value.length > 500) {
+            const [isExpanded, setIsExpanded] = React.useState(false);
 
             return (
-                <Accordion allowToggle>
-                    <AccordionItem border="none">
-                        <AccordionButton
-                            pl={0}
-                            _hover={{ bg: 'transparent' }}
-                            _expanded={{ fontWeight: 'bold' }}
+                <Box>
+                    <Text
+                        noOfLines={isExpanded ? undefined : 5}
+                        whiteSpace="pre-wrap"
+                        mb={2}
+                    >
+                        {value}
+                    </Text>
+                    {value.length > 500 && (
+                        <Flex
+                            alignItems="center"
+                            onClick={() => setIsExpanded(!isExpanded)}
+                            cursor="pointer"
+                            color="blue.500"
+                            _hover={{ color: "blue.600" }}
                         >
-                            <Box flex="1" textAlign="left">
-                                <Text noOfLines={3}>{shortDescription}</Text>
-                            </Box>
-                            <AccordionIcon />
-                        </AccordionButton>
-                        <AccordionPanel pb={4} pl={0}>
-                            {isEditable ? (
-                                <Textarea
-                                    value={fullDescription}
-                                    onChange={(e) => handleDataChange(key, e.target.value)}
-                                    rows={8}
-                                    resize="vertical"
-                                />
-                            ) : (
-                                <Text whiteSpace="pre-wrap">{fullDescription}</Text>
-                            )}
-                        </AccordionPanel>
-                    </AccordionItem>
-                </Accordion>
+                            <Text fontWeight="medium" mr={2}>
+                                {isExpanded ? "Mostrar menos" : "Mostrar mais"}
+                            </Text>
+                            <Icon
+                                as={isExpanded ? ChevronUpIcon : ChevronDownIcon}
+                                w={6}
+                                h={6}
+                            />
+                        </Flex>
+                    )}
+                    {isEditable && (
+                        <Textarea
+                            value={value}
+                            onChange={(e) => handleDataChange(key, e.target.value)}
+                            mt={4}
+                            rows={10}
+                            resize="vertical"
+                        />
+                    )}
+                </Box>
             );
         } else if (key === 'price') {
             return `R$ ${parseFloat(value).toFixed(2)}`;
