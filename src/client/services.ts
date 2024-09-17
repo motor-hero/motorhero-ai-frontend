@@ -165,6 +165,9 @@ export type TDataUpdateUser = {
 export type TDataDeleteUser = {
     userId: string
 }
+export type TDataDeleteJob = {
+    jobId: string
+}
 
 export class UsersService {
     /**
@@ -620,11 +623,11 @@ export class JobsService {
      * @returns Message Successful Response
      * @throws ApiError
      */
-    public static deleteJob(data: TDataReadJob): CancelablePromise<Message> {
-        const {id} = data;
+    public static deleteJob(data: TDataDeleteJob): CancelablePromise<Message> {
+        const {jobId} = data;
         return __request(OpenAPI, {
             method: "DELETE",
-            url: `/api/v1/jobs/${id}`,
+            url: `/api/v1/jobs/${jobId}`,
             errors: {
                 422: "Validation Error",
             },
@@ -715,7 +718,10 @@ export class JobsService {
         });
     }
 
-    public static verifyPart(partId: string, data: { is_verified: boolean, enriched_data: any | null }): CancelablePromise<any> {
+    public static verifyPart(partId: string, data: {
+        is_verified: boolean,
+        enriched_data: any | null
+    }): CancelablePromise<any> {
         const body: any = {
             is_verified: data.is_verified
         };

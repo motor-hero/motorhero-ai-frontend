@@ -11,7 +11,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import React from "react"
 import { useForm } from "react-hook-form"
 
-import { ItemsService, UsersService } from "../../client"
+import {ItemsService, JobsService, UsersService} from "../../client"
 import useCustomToast from "../../hooks/useCustomToast"
 
 interface DeleteProps {
@@ -19,6 +19,12 @@ interface DeleteProps {
   id: string
   isOpen: boolean
   onClose: () => void
+}
+
+const TypeMapping = {
+    Item: "item",
+    User: "usuário",
+    Job: "trabalho"
 }
 
 const Delete = ({ type, id, isOpen, onClose }: DeleteProps) => {
@@ -34,7 +40,10 @@ const Delete = ({ type, id, isOpen, onClose }: DeleteProps) => {
     if (type === "Item") {
       await ItemsService.deleteItem({ id: id })
     } else if (type === "User") {
-      await UsersService.deleteUser({ userId: id })
+      await UsersService.deleteUser({userId: id})
+    } else if (type === "Job") {
+      console.log(id)
+      await JobsService.deleteJob({ jobId: id })
     } else {
       throw new Error(`Unexpected type: ${type}`)
     }
@@ -79,7 +88,7 @@ const Delete = ({ type, id, isOpen, onClose }: DeleteProps) => {
       >
         <AlertDialogOverlay>
           <AlertDialogContent as="form" onSubmit={handleSubmit(onSubmit)}>
-            <AlertDialogHeader>Delete {type}</AlertDialogHeader>
+            <AlertDialogHeader>Deletar {TypeMapping[type]}</AlertDialogHeader>
 
             <AlertDialogBody>
               {type === "User" && (
@@ -88,7 +97,12 @@ const Delete = ({ type, id, isOpen, onClose }: DeleteProps) => {
                   <strong>permantly deleted. </strong>
                 </span>
               )}
-              Are you sure? You will not be able to undo this action.
+              {type === "Job" && (
+                <span>
+                    <strong>Todos os dados associados a este trabalho serão perdidos.{" "}</strong>
+                </span>
+              )}
+              Você tem certeza que deseja deletar este {TypeMapping[type]}?
             </AlertDialogBody>
 
             <AlertDialogFooter gap={3}>

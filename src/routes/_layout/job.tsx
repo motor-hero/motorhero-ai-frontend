@@ -156,7 +156,7 @@ function JobsTable() {
                                     </Td>
                                     <Td>{new Date(job.created_at).toLocaleString("pt-BR")}</Td>
                                     <Td>
-                                        <ActionsMenuJob type={"Trabalho"} value={job}/>
+                                        <ActionsMenuJob type={"Job"} value={job}/>
                                     </Td>
                                 </Tr>
                             ))}
@@ -190,7 +190,7 @@ function Jobs() {
                 Gerenciamento de Trabalhos
             </Heading>
 
-            <Navbar type={"Trabalho"} addModalAs={AddJob}/>
+            <Navbar type={"Job"} addModalAs={AddJob}/>
             <JobsTable/>
         </Container>
     );
