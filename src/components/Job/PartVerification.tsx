@@ -169,7 +169,11 @@ const PartVerificationComponent = ({part, onVerified, currentUser}) => {
                 {Object.entries(data).map(([key, value]) => (
                     <Tr key={key}>
                         <Td fontWeight="bold">{translateField(key)}</Td>
-                        <Td>
+                        <Td
+                            whiteSpace="normal"
+                            wordBreak="break-word"
+                            maxW="400px"
+                        >
                             {renderTableCell(key, value, isEditable)}
                         </Td>
                     </Tr>

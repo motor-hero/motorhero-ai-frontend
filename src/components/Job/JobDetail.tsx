@@ -133,8 +133,9 @@ const JobDetailModal = ({ isOpen, onClose, jobId }) => {
 
     const verifiableParts = useMemo(() => {
         if (!job || !job.parts) return [];
-        return job.parts.filter(part => part.status.toLowerCase() !== 'not_found');
+        return job.parts;
     }, [job]);
+
 
     useEffect(() => {
         setCurrentPage(1);
